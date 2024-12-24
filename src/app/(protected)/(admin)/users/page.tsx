@@ -1,8 +1,10 @@
 import { columns, User } from "@/app/(protected)/(admin)/users/table/columns";
 import { DataTable } from "@/app/(protected)/(admin)/users/table/data-table";
+import { delay } from "@/lib/utils";
 import React from "react";
 
-const page = () => {
+const page =  () => {
+
   const data: User[] = [
     {
       id: "1a2b3c4d",
@@ -119,11 +121,7 @@ const page = () => {
       role: "admin",
     },
   ];
-  return (
-
-      <DataTable columns={columns} data={data} />
-
-  );
+  return <DataTable columns={columns} data={data} />;
 };
 
 export default page;

@@ -25,11 +25,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 const data = [
-  { type: "tourism", visitors: 300, fill: "var(--color-tourism)" },
-  { type: "student", visitors: 305, fill: "var(--color-student)" },
-  { type: "jobs", visitors: 50, fill: "var(--color-jobs)" },
-  { type: "businesses", visitors: 173, fill: "var(--color-businesses)" },
+  // March
+  { type: "tourism", visitors: 300, fill: "var(--color-tourism)", month: "2024-10" },
+  { type: "student", visitors: 305, fill: "var(--color-student)", month: "2024-10" },
+  { type: "jobs", visitors: 50, fill: "var(--color-jobs)", month: "2024-10" },
+  { type: "businesses", visitors: 173, fill: "var(--color-businesses)", month: "2024-10" },
+  // February
+  { type: "tourism", visitors: 170, fill: "var(--color-tourism)", month: "2024-11" },
+  { type: "student", visitors: 484, fill: "var(--color-student)", month: "2024-11" },
+  { type: "jobs", visitors: 99, fill: "var(--color-jobs)", month: "2024-11" },
+  { type: "businesses", visitors: 150, fill: "var(--color-businesses)", month: "2024-11" },
+  // January
+  { type: "tourism", visitors: 100, fill: "var(--color-tourism)", month: "2024-12" },
+  { type: "student", visitors: 150, fill: "var(--color-student)", month: "2024-12" },
+  { type: "jobs", visitors: 200, fill: "var(--color-jobs)", month: "2024-12" },
+  { type: "businesses", visitors: 78, fill: "var(--color-businesses)", month: "2024-12" },
 ];
 
 const chartConfig = {
@@ -57,58 +69,93 @@ const chartConfig = {
 export function ModulesVisitorsChart() {
   const id = "pie-interactive";
   const [activeType, setActiveType] = React.useState(data[0].type);
+  const [activeMonth, setActiveMonth] = React.useState("2024-12");
+
+  const filteredData = React.useMemo(
+    () => data.filter((item) => item.month === activeMonth),
+    [activeMonth]
+  );
 
   const activeIndex = React.useMemo(
-    () => data.findIndex((item) => item.type === activeType),
-    [activeType]
+    () => filteredData.findIndex((item) => item.type === activeType),
+    [activeType, filteredData]
   );
-  const types = React.useMemo(() => data.map((item) => item.type), []);
+
+  const types = React.useMemo(
+    () => [...new Set(data.map((item) => item.type))],
+    []
+  );
+
+  const months = React.useMemo(
+    () => [...new Set(data.map((item) => item.month))],
+    []
+  );
 
   return (
-    <Card data-chart={id} className="flex flex-col">
+    <Card data-chart={id} className="flex flex-col h-full">
       <ChartStyle id={id} config={chartConfig} />
-      <CardHeader className="flex-row items-start space-y-0 pb-0">
-        <div className="grid gap-1">
+      <CardHeader className="flex-col items-center sm:flex-row sm:items-start space-y-0 pb-0 gap-2">
+        <div className="grid gap-1 text-center sm:text-left">
           <CardTitle>Visitors Per Module</CardTitle>
           <CardDescription>
-            Shows visitor numbers across platform modules this month.
+            Shows visitor numbers across platform modules for a selected month.
           </CardDescription>
         </div>
-        <Select value={activeType} onValueChange={setActiveType}>
-          <SelectTrigger
-            className="ml-auto h-7 w-fit min-w-[130px] rounded-lg pl-2.5"
-            aria-label="Select a value"
-          >
-            <SelectValue placeholder="Select month" />
-          </SelectTrigger>
-          <SelectContent align="end" className="rounded-xl">
-            {types.map((key) => {
-              const config = chartConfig[key as keyof typeof chartConfig];
-
-              if (!config) {
-                return null;
-              }
-
-              return (
-                <SelectItem
-                  key={key}
-                  value={key}
-                  className="rounded-lg [&_span]:flex"
-                >
-                  <div className="flex items-center gap-2 text-xs">
-                    <span
-                      className="flex h-3 w-3 shrink-0 rounded-sm"
-                      style={{
-                        backgroundColor: `var(--color-${key})`,
-                      }}
-                    />
-                    {config?.label}
-                  </div>
+        <div className="sm:ml-auto flex gap-2">
+          <Select value={activeMonth} onValueChange={setActiveMonth}>
+            <SelectTrigger
+              className="h-7 w-fit min-w-[130px] rounded-lg pl-2.5"
+              aria-label="Select month"
+            >
+              <SelectValue placeholder="Select month" />
+            </SelectTrigger>
+            <SelectContent align="end" className="rounded-xl">
+              {months.map((month) => (
+                <SelectItem key={month} value={month}>
+                  {new Date(month).toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })}
                 </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={activeType} onValueChange={setActiveType}>
+            <SelectTrigger
+              className="h-7 w-fit min-w-[130px] rounded-lg pl-2.5"
+              aria-label="Select a value"
+            >
+              <SelectValue placeholder="Select month" />
+            </SelectTrigger>
+            <SelectContent align="end" className="rounded-xl">
+              {types.map((key) => {
+                const config = chartConfig[key as keyof typeof chartConfig];
+
+                if (!config) {
+                  return null;
+                }
+
+                return (
+                  <SelectItem
+                    key={key}
+                    value={key}
+                    className="rounded-lg [&_span]:flex"
+                  >
+                    <div className="flex items-center gap-2 text-xs">
+                      <span
+                        className="flex h-3 w-3 shrink-0 rounded-sm"
+                        style={{
+                          backgroundColor: `var(--color-${key})`,
+                        }}
+                      />
+                      {config?.label}
+                    </div>
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       <CardContent className="flex flex-1 justify-center pb-0">
         <ChartContainer
@@ -122,9 +169,9 @@ export function ModulesVisitorsChart() {
               content={<ChartTooltipContent hideLabel />}
             />
             <Pie
-              data={data}
-              dataKey="visitors" // Changed from "data" to "visitors"
-              nameKey="type" // This was correct already
+              data={filteredData}
+              dataKey="visitors"
+              nameKey="type"
               innerRadius={60}
               strokeWidth={5}
               activeIndex={activeIndex}
@@ -157,7 +204,7 @@ export function ModulesVisitorsChart() {
                           y={viewBox.cy}
                           className="fill-foreground text-3xl font-bold"
                         >
-                          {data[activeIndex].visitors.toLocaleString()}
+                          {filteredData[activeIndex]?.visitors.toLocaleString()}
                         </tspan>
                         <tspan
                           x={viewBox.cx}

@@ -26,8 +26,9 @@ import {
 import LatestAddedData from "@/components/admin/latest_added_data";
 import { UsersChart } from "@/components/admin/users_chart";
 import { ModulesVisitorsChart } from "@/components/admin/modules_visitors_chart";
+import { delay } from "@/lib/utils";
 
-export default function page() {
+export default function Page() {
   type LatestAddedDataProps = {
     title: string;
     description: string;
@@ -133,8 +134,14 @@ export default function page() {
         ))}
       </div>{" "}
       <UsersChart />
-      <LatestAddedData latestData={latestUsers} />
-      <ModulesVisitorsChart />
+      <div className="w-full flex flex-col gap-5 h-fit lg:flex-row">
+        <div className="w-full lg:w-1/2">
+          <LatestAddedData latestData={latestUsers} />
+        </div>
+        <div className="w-full lg:w-1/2">
+          <ModulesVisitorsChart />
+        </div>
+      </div>
     </div>
   );
 }

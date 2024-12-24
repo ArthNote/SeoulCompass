@@ -1,5 +1,5 @@
 import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, delay } from "@/lib/utils";
 import Link from "next/link";
 import React from "react";
 import Image from "next/image";
