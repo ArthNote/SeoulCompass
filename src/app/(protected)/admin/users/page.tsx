@@ -1,5 +1,5 @@
 import { columns, User } from "@/app/(protected)/(admin)/users/table/columns";
-import { DataTable } from "@/app/(protected)/(admin)/users/table/data-table";
+import { UsersTable } from "@/app/(protected)/(admin)/users/table/data-table";
 import { delay } from "@/lib/utils";
 import React from "react";
 
@@ -121,7 +121,7 @@ const page =  () => {
       role: "admin",
     },
   ];
-  return <DataTable columns={columns} data={data} />;
+  return <UsersTable columns={columns} data={data} />;
 };
 
 export default page;

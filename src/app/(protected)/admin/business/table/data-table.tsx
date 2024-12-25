@@ -51,13 +51,14 @@ import CreateUserDialog from "../../../../../components/admin/users/create_user_
 import AlertDialogDelete from "../../../../../components/shared/alert_dialog_delete";
 import { DataTableFacetedFilter } from "../../../../../components/table/faceted_filter";
 import { Cross2Icon } from "@radix-ui/react-icons";
+import Link from "next/link";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function BusinessTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -92,14 +93,18 @@ export function DataTable<TData, TValue>({
 
   const isFiltered = table.getState().columnFilters.length > 0;
 
-  const types = [
+  const categories = [
     {
-      label: "User",
-      value: "user",
+      label: "Industry",
+      value: "industry",
     },
     {
-      label: "Admin",
-      value: "admin",
+      label: "Business Center",
+      value: "business_center",
+    },
+    {
+      label: "Opportunity",
+      value: "opportunity",
     },
   ];
 
@@ -116,11 +121,11 @@ export function DataTable<TData, TValue>({
             className="sm:max-w-sm w-full"
           />
           <div className="w-fit flex items-center">
-            {table.getColumn("role") && (
+            {table.getColumn("category") && (
               <DataTableFacetedFilter
-                column={table.getColumn("role")}
-                title="Role"
-                options={types}
+                column={table.getColumn("category")}
+                title="Category"
+                options={categories}
               />
             )}
             {isFiltered && (
@@ -151,17 +156,23 @@ export function DataTable<TData, TValue>({
               }
               title={
                 Object.keys(rowSelection).length == 1
-                  ? "Delete User"
-                  : `Delete ${Object.keys(rowSelection).length} Users`
+                  ? "Delete Business"
+                  : `Delete ${Object.keys(rowSelection).length} Businesss`
               }
               description={
                 Object.keys(rowSelection).length == 1
-                  ? "Are you sure you want to delete this user?"
-                  : "Are you sure you want to delete these users?"
+                  ? "Are you sure you want to delete this business?"
+                  : "Are you sure you want to delete these businesses?"
               }
             />
           )}
-          <CreateUserDialog />
+          <Link href="/business/add">
+            <Button variant="default" size="sm" className="ml-auto h-8">
+              <Plus />
+              Create
+            </Button>
+          </Link>
+
           <DataTableViewOptions table={table} />
         </div>
       </div>

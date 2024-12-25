@@ -35,6 +35,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useTheme } from "next-themes";
+import Link from "next/link";
 
 export function NavUser({
   user,
@@ -124,10 +125,12 @@ export function NavUser({
               </DropdownMenuSub>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
-              Log out
-            </DropdownMenuItem>
+            <Link href="/signin">
+              <DropdownMenuItem>
+                <LogOut />
+                Log out
+              </DropdownMenuItem>
+            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

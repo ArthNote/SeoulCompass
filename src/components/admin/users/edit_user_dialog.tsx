@@ -8,19 +8,43 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { User } from "@/app/(protected)/(admin)/users/table/columns";
 
-type WrapperProps = {
-  children: ReactNode; // Allows any React component or JSX as a child
-};
+const formSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  role: z.enum(["user", "admin"]),
+});
 
 const EditUserDialog = ({ user, child }: { user: User; child: ReactNode }) => {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: user.name,
+      email: user.email,
+      role: user.role as "user" | "admin",
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
+    // Handle user update here
+  }
+
   return (
     <Dialog>
       <DialogTrigger asChild>{child}</DialogTrigger>
@@ -31,48 +55,65 @@ const EditUserDialog = ({ user, child }: { user: User; child: ReactNode }) => {
             Fill in the form below to edit this user.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              placeholder="Pedro Duarte"
-              className="col-span-3"
-              type="text"
-              defaultValue={user.name}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="pedro@gmail.com"
-              className="col-span-3"
-              defaultValue={user.email}
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="role">Role</Label>
-            <RadioGroup
-              defaultValue={user.role}
-              id="role"
-              className="flex flex-row gap-4"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="user" id="r1" />
-                <Label htmlFor="r1">User</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="admin" id="r2" />
-                <Label htmlFor="r2">Admin</Label>
-              </div>
-            </RadioGroup>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="submit">Update User</Button>
-        </DialogFooter>
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Role</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-row gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="user" id="user" />
+                        <FormLabel htmlFor="user">User</FormLabel>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="admin" id="admin" />
+                        <FormLabel htmlFor="admin">Admin</FormLabel>
+                      </div>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <Button type="submit">Update User</Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
