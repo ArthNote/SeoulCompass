@@ -17,7 +17,6 @@ import {
 import { ArrowUpDown } from "lucide-react";
 import { DataTableColumnHeader } from "../../../../../components/table/column_header";
 import AlertDialogDelete from "../../../../../components/shared/alert_dialog_delete";
-import EditLocationDialog from "../../../../../components/admin/tourism/edit_location_dialog";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import ViewLocationDialog from "@/components/admin/tourism/view_location_dialog";
