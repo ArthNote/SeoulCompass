@@ -5,15 +5,14 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "../ui/select";
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>;
@@ -23,16 +22,14 @@ export function DataTablePagination<TData>({
   table,
 }: DataTablePaginationProps<TData>) {
   return (
-    <div className="flex flex-row  items-center justify-between gap-4 py-4">
-      <div className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1">
+    <div className="flex items-center justify-between px-2 py-4">
+      <div className="flex-1 text-sm text-muted-foreground">
         {table.getFilteredSelectedRowModel().rows.length} of{" "}
         {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
-      <div className="flex flex-row items-center gap-4 sm:space-x-6 lg:space-x-8 order-2 sm:order-2">
-        <div className="flex items-center gap-2">
-          <p className="text-xs sm:text-sm font-medium hidden sm:block">
-            Rows per page
-          </p>
+      <div className="flex items-center space-x-6 lg:space-x-8">
+        <div className="flex items-center space-x-2">
+          <p className="text-sm font-medium">Rows per page</p>
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
@@ -51,11 +48,11 @@ export function DataTablePagination<TData>({
             </SelectContent>
           </Select>
         </div>
-        <div className=" w-[100px] items-center hidden sm:flex justify-center text-sm font-medium">
+        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {table.getPageCount()}
         </div>
-        <div className="flex items-center sm:items-center gap-2">
+        <div className="flex items-center space-x-2">
           <Button
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex"
@@ -63,7 +60,7 @@ export function DataTablePagination<TData>({
             disabled={!table.getCanPreviousPage()}
           >
             <span className="sr-only">Go to first page</span>
-            <ChevronsLeft />
+            <ChevronsLeft className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
@@ -72,11 +69,8 @@ export function DataTablePagination<TData>({
             disabled={!table.getCanPreviousPage()}
           >
             <span className="sr-only">Go to previous page</span>
-            <ChevronLeft />
+            <ChevronLeft className="h-4 w-4" />
           </Button>
-          <div className="items-center block sm:hidden justify-center text-sm font-medium">
-            {table.getState().pagination.pageIndex + 1}
-          </div>
           <Button
             variant="outline"
             className="h-8 w-8 p-0"
@@ -84,7 +78,7 @@ export function DataTablePagination<TData>({
             disabled={!table.getCanNextPage()}
           >
             <span className="sr-only">Go to next page</span>
-            <ChevronRight />
+            <ChevronRight className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
@@ -93,7 +87,7 @@ export function DataTablePagination<TData>({
             disabled={!table.getCanNextPage()}
           >
             <span className="sr-only">Go to last page</span>
-            <ChevronsRight />
+            <ChevronsRight className="h-4 w-4" />
           </Button>
         </div>
       </div>

@@ -21,6 +21,7 @@ import { ModeToggle } from "@/components/mode_toggle";
 import { cookies } from "next/headers";
 import BreadcrumbNavigation from "@/components/breadcrumb_navigation";
 import constants from "../../../../constants";
+import { SignedIn } from "@clerk/nextjs";
 
 export default async function AdminLayout({
   children,
@@ -30,16 +31,18 @@ export default async function AdminLayout({
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar:state")?.value === "true";
   return (
-    <SidebarProvider defaultOpen={defaultOpen}>
-      <AppSidebar />
-      <main className="w-full">
-        <div className="w-full p-2 space-x-2 border border-b  border-l-0 flex items-center fixed z-10 bg-background/60 backdrop-blur-xl transition-all">
-          <SidebarTrigger />
-          <Separator orientation="vertical" className="h-4" />
-          <BreadcrumbNavigation />
-        </div>
-        <section className="p-4 mt-14">{children}</section>
-      </main>
-    </SidebarProvider>
+
+      <SidebarProvider defaultOpen={defaultOpen}>
+        <AppSidebar />
+        <main className="w-full">
+          <div className="w-full p-2 space-x-2 border border-b  border-l-0 flex items-center fixed z-10 bg-background/60 backdrop-blur-xl transition-all">
+            <SidebarTrigger />
+            <Separator orientation="vertical" className="h-4" />
+            <BreadcrumbNavigation />
+          </div>
+          <section className="p-4 mt-14">{children}</section>
+        </main>
+      </SidebarProvider>
+
   );
 }

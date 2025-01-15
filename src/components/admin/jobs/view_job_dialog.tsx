@@ -6,7 +6,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Job } from "@/app/(protected)/(admin)/jobs/table/columns";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,25 +17,21 @@ import {
   Factory,
   ScrollText,
 } from "lucide-react";
+import { JobType } from "@/types/job";
 
 interface ViewJobDialogProps {
-  job: Job;
+  job: JobType;
 }
 
 const ViewJobDialog = ({ job }: ViewJobDialogProps) => {
-  const formatSalary = (salary: string) => {
-    const [min, max] = salary.split("-").map(Number);
-    return (
-      new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(min) +
-      " - " +
-      new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(max)
-    );
+  const formatSalary = (salary: { min: number, max: number, period: string }) => {
+    return `${new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(salary.min)} - ${new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(salary.max)} (${salary.period})`;
   };
 
   return (
@@ -55,7 +50,7 @@ const ViewJobDialog = ({ job }: ViewJobDialogProps) => {
               </DialogTitle>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Building2 className="h-4 w-4 flex-shrink-0" />
-                <span className="text-sm">{job.company}</span>
+                <span className="text-sm">{job.company.name}</span>
               </div>
             </div>
             <Badge
@@ -81,7 +76,7 @@ const ViewJobDialog = ({ job }: ViewJobDialogProps) => {
                 <MapPin className="h-4 w-4 flex-shrink-0" />
                 <span>Location</span>
               </div>
-              <p className="font-medium text-sm">{job.location}</p>
+              <p className="font-medium text-sm">{job.location.address}</p>
             </div>
           </div>
 

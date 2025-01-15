@@ -2,12 +2,14 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Student } from "@/app/(protected)/(admin)/student/table/columns";
+import { StudentResource } from "@/types/student-resource";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import {
   Building2,
@@ -19,7 +21,7 @@ import {
 } from "lucide-react";
 
 interface ViewStudentDialogProps {
-  resource: Student;
+  resource: StudentResource;
 }
 
 const ViewStudentDialog = ({ resource }: ViewStudentDialogProps) => {
@@ -27,81 +29,88 @@ const ViewStudentDialog = ({ resource }: ViewStudentDialogProps) => {
     <Dialog>
       <DialogTrigger asChild>
         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-          View Resource
+          View Details
         </DropdownMenuItem>
       </DialogTrigger>
-      <DialogContent className="max-h-[80vh] overflow-y-auto">
-        <DialogHeader className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mt-2">
-            <div className="space-y-2">
-              <DialogTitle className="text-xl font-semibold tracking-tight">
-                {resource.name}
-              </DialogTitle>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <GraduationCap className="h-4 w-4 flex-shrink-0" />
-                <span className="text-sm capitalize">
-                  {resource.category.replace("_", " ")}
-                </span>
-              </div>
-            </div>
-            <Badge
-              variant="secondary"
-              className="capitalize px-3 py-1 w-fit h-fit"
-            >
-              {resource.category.replace("_", " ")}
-            </Badge>
-          </div>
+      <DialogContent className="sm:max-w-[600px] w-[95vw] max-h-[90vh]">
+        <DialogHeader>
+          <DialogTitle>{resource.name}</DialogTitle>
+          <DialogDescription>
+            Resource Details
+          </DialogDescription>
         </DialogHeader>
-
-        <div className="grid gap-6 pt-6">
-          <div className="grid sm:grid-cols-2 gap-6">
+        <ScrollArea className="max-h-[70vh] pr-2 sm:pr-4">
+          <div className="grid gap-3 sm:gap-4 py-2 sm:py-4">
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span>Address</span>
+              <h4 className="font-medium">Basic Information</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2 text-sm">
+                <div className="font-medium">Type:</div>
+                <div>{resource.type}</div>
+                <div className="font-medium">Address:</div>
+                <div>{resource.location.address}</div>
+                <div className="font-medium">Rating:</div>
+                <div>{resource.rating} ({resource.userRatingCount} reviews)</div>
               </div>
-              <p className="font-medium text-sm">{resource.location}</p>
             </div>
+
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Navigation className="h-4 w-4 flex-shrink-0" />
-                <span>Coordinates</span>
+              <h4 className="font-medium">Contact Information</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2 text-sm">
+                <div className="font-medium">Phone:</div>
+                <div>{resource.contact.phone}</div>
+                {resource.contact.email && (
+                  <>
+                    <div className="font-medium">Email:</div>
+                    <div>{resource.contact.email}</div>
+                  </>
+                )}
+                {resource.contact.website && (
+                  <>
+                    <div className="font-medium">Website:</div>
+                    <div>{resource.contact.website}</div>
+                  </>
+                )}
               </div>
-              <p className="font-medium text-sm">
-                {resource.lat}, {resource.lng}
-              </p>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <ScrollText className="h-4 w-4 flex-shrink-0" />
-              <span>Description</span>
+            <div className="space-y-2">
+              <h4 className="font-medium">Opening Hours</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2 text-sm">
+                <div className="font-medium">Weekday:</div>
+                <div>{resource.openingHours.weekday}</div>
+                <div className="font-medium">Weekend:</div>
+                <div>{resource.openingHours.weekend}</div>
+              </div>
             </div>
-            <div className="text-sm leading-relaxed prose prose-sm max-w-none max-h-[150px] overflow-y-auto rounded-md border p-4">
-              {resource.description}
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Phone className="h-4 w-4 flex-shrink-0" />
-              <span>Contact</span>
-            </div>
-            <p className="text-sm font-medium break-all">{resource.contact}</p>
-          </div>
-        </div>
+            {resource.accessibility && resource.accessibility.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium">Accessibility Features</h4>
+                <ul className="list-disc list-inside text-sm space-y-1">
+                  {resource.accessibility.map((feature, index) => (
+                    <li key={index}>{feature}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-        <div className="flex justify-end mt-6 pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={() => window.open(`tel:${resource.contact}`)}
-            className="w-full sm:w-auto"
-          >
-            <Phone className="w-4 h-4 mr-2" />
-            Contact Resource
-          </Button>
-        </div>
+            {resource.photos && resource.photos.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium">Photos</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {resource.photos.map((photo, index) => (
+                    <img
+                      key={index}
+                      src={photo}
+                      alt={`${resource.name} photo ${index + 1}`}
+                      className="rounded-md w-full h-48 sm:h-32 object-cover"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

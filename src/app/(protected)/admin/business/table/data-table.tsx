@@ -52,16 +52,23 @@ import AlertDialogDelete from "../../../../../components/shared/alert_dialog_del
 import { DataTableFacetedFilter } from "../../../../../components/table/faceted_filter";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import Link from "next/link";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
+import { getBusinesses, deleteBulkBusinesses } from "@/lib/api/business";
+import { toast } from "@/hooks/use-toast";
+import { ErrorState } from "@/components/shared/error-state";
+import AdminBusinessLoading from "../loading";
+import { BusinessType } from "@/types/business";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+interface DataTableProps {
+  columns: ColumnDef<BusinessType, any>[];
 }
 
-export function BusinessTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
+export function BusinessTable({ columns }: DataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -69,8 +76,50 @@ export function BusinessTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [pageIndex, setPageIndex] = React.useState(0);
+  const [pageSize, setPageSize] = React.useState(10);
+
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: [
+      "businesses",
+      pageIndex,
+      pageSize,
+      columnFilters.find((f) => f.id === "name")?.value,
+      columnFilters.find((f) => f.id === "type")?.value,
+    ],
+    queryFn: () =>
+      getBusinesses({
+        page: pageIndex,
+        size: pageSize,
+        name: columnFilters.find((f) => f.id === "name")?.value as string,
+        types: columnFilters.find((f) => f.id === "type")?.value as string[], // Changed to handle array
+      }),
+    placeholderData: keepPreviousData,
+  });
+
+  const queryClient = useQueryClient();
+
+  const { mutate: deleteSelectedBusinesses } = useMutation({
+    mutationFn: (ids: string[]) => deleteBulkBusinesses(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["businesses"] });
+      setRowSelection({});
+      toast({
+        title: "Success",
+        description: "Selected businesses have been deleted.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete businesses. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const table = useReactTable({
-    data,
+    data: (data?.content || []) as BusinessType[],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -80,27 +129,61 @@ export function BusinessTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    getFacetedRowModel: getFacetedRowModel(), // Add this
+    getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
+      pagination: {
+        pageIndex,
+        pageSize,
+      },
     },
     enableMultiRowSelection: true,
+    pageCount: data?.totalPages ?? 0,
+    manualPagination: true,
+    onPaginationChange: (updater) => {
+      if (typeof updater === "function") {
+        const newState = updater({
+          pageIndex,
+          pageSize,
+        });
+        setPageIndex(newState.pageIndex);
+        setPageSize(newState.pageSize);
+      } else {
+        setPageIndex(updater.pageIndex);
+        setPageSize(updater.pageSize);
+      }
+    },
   });
+
+  if (isLoading) return <AdminBusinessLoading />;
+  if (isError)
+    return (
+      <ErrorState
+        title="Error loading businesses"
+        description="Failed to load businesses"
+        retryAction={() => refetch()}
+      />
+    );
 
   const isFiltered = table.getState().columnFilters.length > 0;
 
-  const categories = [
+  const types = [
+    // Changed from categories to types
+    {
+      label: "Business Center",
+      value: "business_center",
+    },
     {
       label: "Industry",
       value: "industry",
     },
     {
-      label: "Business Center",
-      value: "business_center",
+      label: "Event",
+      value: "event",
     },
     {
       label: "Opportunity",
@@ -121,11 +204,11 @@ export function BusinessTable<TData, TValue>({
             className="sm:max-w-sm w-full"
           />
           <div className="w-fit flex items-center">
-            {table.getColumn("category") && (
+            {table.getColumn("type") && (
               <DataTableFacetedFilter
-                column={table.getColumn("category")}
-                title="Category"
-                options={categories}
+                column={table.getColumn("type")}
+                title="Type"
+                options={types}
               />
             )}
             {isFiltered && (
@@ -164,9 +247,16 @@ export function BusinessTable<TData, TValue>({
                   ? "Are you sure you want to delete this business?"
                   : "Are you sure you want to delete these businesses?"
               }
+              onDelete={() => {
+                const selectedItems = table
+                  .getFilteredSelectedRowModel()
+                  .rows.map((row) => row.original as BusinessType);
+                const ids = selectedItems.map((item) => item.id);
+                deleteSelectedBusinesses(ids);
+              }}
             />
           )}
-          <Link href="/business/add">
+          <Link href="/admin/business/add">
             <Button variant="default" size="sm" className="ml-auto h-8">
               <Plus />
               Create

@@ -42,14 +42,13 @@ export function NavMain({
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
                   asChild
-                  isActive={path.startsWith(item.url)}
+                  isActive={path.includes(item.url)}
                   tooltip={item.title}
-                  onClick={() => console.log("clicked " + item.url)}
                 >
-                  <a href={item.url}>
+                  <Link href={item.url}>
                     <item.icon />
                     <span>{item.title}</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
@@ -66,12 +65,11 @@ export function NavMain({
                   asChild
                   tooltip={item.title}
                   isActive={path.startsWith(item.url)}
-                  onClick={() => console.log("clicked " + item.url)}
                 >
-                  <a href={item.url}>
+                  <Link href={item.url}>
                     <item.icon />
                     <span>{item.title}</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}

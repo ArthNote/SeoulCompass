@@ -13,15 +13,19 @@ import {
 const BreadcrumbNavigation = () => {
   const router = usePathname();
   const pathSegments = router.split("/").filter(Boolean);
+  
+  // Filter out "admin" from display segments but keep for href
+  const displaySegments = pathSegments.filter(segment => segment !== "admin");
 
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        {pathSegments.map((segment, index) => {
-          const isLast = index === pathSegments.length - 1;
+        {displaySegments.map((segment, index) => {
+          const isLast = index === displaySegments.length - 1;
           const formatedSegment =
             segment.charAt(0).toUpperCase() + segment.slice(1);
-          const href = "/" + pathSegments.slice(0, index + 1).join("/");
+          // Keep admin in the href if it exists in original path
+          const href = "/" + pathSegments.slice(0, pathSegments.indexOf(segment) + 1).join("/");
 
           return (
             <React.Fragment key={href}>

@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-export default function Loading() {
+export default function UsersLoading() {
   // Create array for table rows
   const rows = Array(10).fill(null)
 

@@ -1,7 +1,5 @@
 import type { NextConfig } from "next";
 
-
-
 const nextConfig: NextConfig = {
   /* config options here */
   devIndicators: {
@@ -48,6 +46,12 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "randomuser.me",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
         port: "",
         pathname: "/**",
       },

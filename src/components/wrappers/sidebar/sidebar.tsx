@@ -61,37 +61,37 @@ const data: {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/admin/dashboard",
       icon: LayoutDashboard,
       type: "admin" as const,
     },
     {
       title: "Users",
-      url: "/users",
+      url: "/admin/users",
       icon: Users,
       type: "admin" as const,
     },
     {
       title: "Tourism",
-      url: "/tourism",
+      url: "/admin/tourism",
       icon: MapPin,
       type: "module" as const,
     },
     {
       title: "Student",
-      url: "/student",
+      url: "/admin/student-resources",
       icon: University,
       type: "module",
     },
     {
       title: "Jobs",
-      url: "/jobs",
+      url: "/admin/jobs",
       icon: Briefcase,
       type: "module",
     },
     {
       title: "Business",
-      url: "/business",
+      url: "/admin/business",
       icon: PieChart,
       type: "module",
     },

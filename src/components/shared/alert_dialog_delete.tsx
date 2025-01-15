@@ -20,10 +20,12 @@ const AlertDialogDelete = ({
   title,
   description,
   children,
+  onDelete,
 }: {
   title: string;
   description: string;
   children: ReactNode;
+  onDelete?: () => void;
 }) => {
   return (
     <AlertDialog>
@@ -35,7 +37,7 @@ const AlertDialogDelete = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction>Delete</AlertDialogAction>
+          <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

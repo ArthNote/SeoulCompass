@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export default function Loading() {
+export default function AdminJobsLoading() {
   return (
     <div>
       <div className="flex flex-col-reverse lg:flex-row items-start lg:items-center pb-4 justify-between gap-4">

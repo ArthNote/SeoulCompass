@@ -19,16 +19,13 @@ import { DataTableColumnHeader } from "../../../../../components/table/column_he
 import AlertDialogDelete from "../../../../../components/shared/alert_dialog_delete";
 import EditUserDialog from "../../../../../components/admin/users/edit_user_dialog";
 import { useToast } from "@/hooks/use-toast";
+import { UserType } from "@/types/user";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteClerkUser, deleteUser } from "@/lib/api/users";
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
-export type User = {
-  id: string;
-  name: string;
-  email: string;
-  role: "user" | "admin";
-};
 
-export const columns: ColumnDef<User>[] = [
+export const columns: ColumnDef<UserType>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -52,9 +49,9 @@ export const columns: ColumnDef<User>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: "username",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
+      <DataTableColumnHeader column={column} title="Username" />
     ),
   },
   {
@@ -68,26 +65,66 @@ export const columns: ColumnDef<User>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Role" />
     ),
+    cell: ({ row }) => {
+      const role = row.original.role;
+      return <span>{role.charAt(0).toUpperCase() + role.slice(1)}</span>;
+    },
     enableColumnFilter: true,
     filterFn: (row, id, filterValues: string[]) => {
+      // If no filters are selected, show all rows
       if (!filterValues?.length) return true;
       const rowValue = row.getValue(id) as string;
-      return filterValues.includes(rowValue);
+      // Check if the row's role is included in the selected filter values
+
+      return filterValues.includes(rowValue.toLowerCase());
     },
   },
   {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
+      const queryClient = useQueryClient();
       const user = row.original;
       const { toast } = useToast();
 
-      const copyToClipboard = async (text: string) => {
+      const copyToClipboard = async (text: string, type: string) => {
         await navigator.clipboard.writeText(text);
         toast({
-          description: "User ID copied to clipboard",
+          description: type + " ID copied to clipboard",
         });
       };
+
+      const {
+        mutate: deleteUserr,
+        isError,
+        error,
+      } = useMutation({
+        mutationFn: ({
+          userId,
+          clerkId,
+        }: {
+          userId: string;
+          clerkId: string;
+        }) => deleteUser(userId, clerkId),
+
+        onSuccess: (data) => {
+          console.log("User deleted successfully:", data);
+          queryClient.invalidateQueries({ queryKey: ["users"] });
+          toast({
+            title: "Success",
+            description: "User deleted successfully.",
+          });
+        },
+        retry: 3,
+        onError: (error, variables) => {
+          console.error("Error deleting user:", error);
+          console.error(JSON.stringify(error, null, 2));
+          toast({
+            title: "Error",
+            description: "Failed to delete user. Please try again.",
+          });
+        },
+      });
 
       return (
         <DropdownMenu>
@@ -99,8 +136,13 @@ export const columns: ColumnDef<User>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => copyToClipboard(user.id)}>
+            <DropdownMenuItem onClick={() => copyToClipboard(user.id, "User")}>
               Copy user ID
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => copyToClipboard(user.clerkId, "Clerk")}
+            >
+              Copy clerk ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <EditUserDialog
@@ -120,6 +162,12 @@ export const columns: ColumnDef<User>[] = [
               }
               title="Delete User"
               description="Are you sure you want to delete this user?"
+              onDelete={() =>
+                deleteUserr({
+                  userId: user.id,
+                  clerkId: user.clerkId,
+                })
+              }
             />
           </DropdownMenuContent>
         </DropdownMenu>

@@ -21,17 +21,11 @@ import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import ViewStudentDialog from "@/components/admin/student/view_student_dialog";
 import ViewBusinessDialog from "@/components/admin/business/view_business_dialog";
+import { BusinessType } from "@/types/business";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteBusiness } from "@/lib/api/business";
 
-export type Business = {
-  id: string;
-  name: string;
-  category: "industry" | "business_center" | "opportunity"; 
-  location: string; 
-  description: string; 
-  website: string;
-};
-
-export const columns: ColumnDef<Business>[] = [
+export const columns: ColumnDef<BusinessType>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -61,15 +55,9 @@ export const columns: ColumnDef<Business>[] = [
     ),
   },
   {
-    accessorKey: "description",
+    accessorKey: "type",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Description" />
-    ),
-  },
-  {
-    accessorKey: "category",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Category" />
+      <DataTableColumnHeader column={column} title="Type" />
     ),
     enableColumnFilter: true,
     filterFn: (row, id, filterValues: string[]) => {
@@ -77,11 +65,15 @@ export const columns: ColumnDef<Business>[] = [
       const rowValue = row.getValue(id) as string;
       return filterValues.includes(rowValue);
     },
+    cell: ({ row }) => {
+      const type = row.original.type;
+      return (type.charAt(0).toUpperCase() + type.slice(1)).replace("_", " ");
+    },
   },
   {
-    accessorKey: "website",
+    accessorKey: "description",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Website" />
+      <DataTableColumnHeader column={column} title="Description" />
     ),
   },
   {
@@ -90,6 +82,7 @@ export const columns: ColumnDef<Business>[] = [
     cell: ({ row }) => {
       const business = row.original;
       const { toast } = useToast();
+      const queryClient = useQueryClient();
 
       const copyToClipboard = async (text: string, data: string) => {
         await navigator.clipboard.writeText(text);
@@ -97,6 +90,27 @@ export const columns: ColumnDef<Business>[] = [
           description: `Business ${data} copied to clipboard`,
         });
       };
+
+      const { mutate: deleteBusinesss } = useMutation({
+        mutationFn: deleteBusiness,
+        onSuccess: (data) => {
+          console.log("Business deleted successfully:", data);
+          queryClient.invalidateQueries({ queryKey: ["businesses"] });
+          toast({
+            title: "Success",
+            description: "Business deleted successfully.",
+          });
+        },
+        retry: 3,
+        onError: (error, variables) => {
+          console.error("Error deleting business:", error);
+          console.error(JSON.stringify(error, null, 2));
+          toast({
+            title: "Error",
+            description: "Failed to delete Location. Please try again.",
+          });
+        },
+      });
 
       return (
         <DropdownMenu>
@@ -118,7 +132,7 @@ export const columns: ColumnDef<Business>[] = [
             <DropdownMenuSeparator />
             <Link
               href={{
-                pathname: `/business/edit/${business.id}`,
+                pathname: `/admin/business/edit/${business.id}`,
               }}
             >
               <DropdownMenuItem>Edit Business</DropdownMenuItem>
@@ -131,6 +145,7 @@ export const columns: ColumnDef<Business>[] = [
               }
               title="Delete Business"
               description="Are you sure you want to delete this business?"
+              onDelete={() => deleteBusinesss(business.id)}
             />
           </DropdownMenuContent>
         </DropdownMenu>

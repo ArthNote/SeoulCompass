@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 
-import { MoreHorizontal, Trash } from "lucide-react";
+import { MoreHorizontal, Star, Trash } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,28 +21,14 @@ import EditLocationDialog from "../../../../../components/admin/tourism/edit_loc
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import ViewLocationDialog from "@/components/admin/tourism/view_location_dialog";
+import { TourismType } from "@/types/tourism";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteTourism } from "@/lib/api/tourism";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
-export type Location = {
-  id: string;
-  name: string;
-  description: string;
-  category:
-    | "restaurant"
-    | "hotel"
-    | "attraction"
-    | "bank"
-    | "theater"
-    | "bus_station";
-  location: string;
-  contact: string;
-  rating: number;
-  lat: number;
-  lng: number;
-};
 
-export const columns: ColumnDef<Location>[] = [
+export const columns: ColumnDef<TourismType>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -72,10 +58,26 @@ export const columns: ColumnDef<Location>[] = [
     ),
   },
   {
-    accessorKey: "category",
+    accessorKey: "type",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Category" />
     ),
+    cell: ({ row }) => {
+      const type = row.original.type;
+      return (
+        <span>
+          {[type]
+            .map((t) =>
+              t
+                .replace(/_/g, " ")
+                .split(" ")
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ")
+            )
+            .join(", ")}
+        </span>
+      );
+    },
     enableColumnFilter: true,
     filterFn: (row, id, filterValues: string[]) => {
       if (!filterValues?.length) return true;
@@ -84,22 +86,26 @@ export const columns: ColumnDef<Location>[] = [
     },
   },
   {
-    accessorKey: "location",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Location" />
-    ),
-  },
-  {
     accessorKey: "rating",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Rating" />
     ),
+
+    // cell: ({ row }) => {
+    //   const description = row.original.description;
+    //   return (
+    //     <span className="truncate block max-w-[70px] md:max-w-[100px]">
+    //       {description}
+    //     </span>
+    //   );
+    // },
   },
   {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
       const location = row.original;
+      const queryClient = useQueryClient();
       const { toast } = useToast();
 
       const copyToClipboard = async (text: string, data: string) => {
@@ -108,6 +114,32 @@ export const columns: ColumnDef<Location>[] = [
           description: `Location ${data} copied to clipboard`,
         });
       };
+
+      const {
+        mutate: deleteLocation,
+        isError,
+        error,
+      } = useMutation({
+        mutationFn: deleteTourism,
+
+        onSuccess: (data) => {
+          console.log("Location deleted successfully:", data);
+          queryClient.invalidateQueries({ queryKey: ["tourism"] });
+          toast({
+            title: "Success",
+            description: "Location deleted successfully.",
+          });
+        },
+        retry: 3,
+        onError: (error, variables) => {
+          console.error("Error deleting Location:", error);
+          console.error(JSON.stringify(error, null, 2));
+          toast({
+            title: "Error",
+            description: "Failed to delete Location. Please try again.",
+          });
+        },
+      });
 
       return (
         <DropdownMenu>
@@ -129,7 +161,7 @@ export const columns: ColumnDef<Location>[] = [
             <DropdownMenuSeparator />
             <Link
               href={{
-                pathname: `/tourism/edit/${location.id}`,
+                pathname: `/admin/tourism/edit/${location.id}`,
               }}
             >
               <DropdownMenuItem>Edit Location</DropdownMenuItem>
@@ -146,6 +178,7 @@ export const columns: ColumnDef<Location>[] = [
               }
               title="Delete Location"
               description="Are you sure you want to delete this location?"
+              onDelete={() => deleteLocation(location.id)}
             />
           </DropdownMenuContent>
         </DropdownMenu>

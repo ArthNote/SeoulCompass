@@ -6,7 +6,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Business } from "@/app/(protected)/(admin)/business/table/columns";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,9 +14,10 @@ import {
   Globe,
   ScrollText,
 } from "lucide-react";
+import { BusinessType } from "@/types/business";
 
 interface ViewBusinessDialogProps {
-  business: Business;
+  business: BusinessType;
 }
 
 const ViewBusinessDialog = ({ business }: ViewBusinessDialogProps) => {
@@ -37,7 +37,7 @@ const ViewBusinessDialog = ({ business }: ViewBusinessDialogProps) => {
               </DialogTitle>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Building2 className="h-4 w-4 flex-shrink-0" />
-                <span className="text-sm capitalize">{business.category.replace('_', ' ')}</span>
+                <span className="text-sm capitalize">{business.type.replace('_', ' ')}</span>
               </div>
             </div>
             <Badge
@@ -55,7 +55,7 @@ const ViewBusinessDialog = ({ business }: ViewBusinessDialogProps) => {
               <MapPin className="h-4 w-4 flex-shrink-0" />
               <span>Location</span>
             </div>
-            <p className="font-medium text-sm">{business.location}</p>
+            <p className="font-medium text-sm">{business.location.address}</p>
           </div>
 
           <div className="space-y-2">
@@ -73,14 +73,14 @@ const ViewBusinessDialog = ({ business }: ViewBusinessDialogProps) => {
               <Globe className="h-4 w-4 flex-shrink-0" />
               <span>Website</span>
             </div>
-            <p className="text-sm font-medium break-all">{business.website}</p>
+            <p className="text-sm font-medium break-all">{business.contact.website}</p>
           </div>
         </div>
 
         <div className="flex justify-end mt-6 pt-4 border-t">
           <Button
             variant="outline"
-            onClick={() => window.open(business.website, '_blank')}
+            onClick={() => window.open(business.contact.website, '_blank')}
             className="w-full sm:w-auto"
           >
             <Globe className="w-4 h-4 mr-2" />

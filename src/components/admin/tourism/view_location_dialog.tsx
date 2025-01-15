@@ -6,7 +6,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Location } from "@/app/(protected)/(admin)/tourism/table/columns";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,9 +17,10 @@ import {
   ScrollText,
   Phone,
 } from "lucide-react";
+import { TourismType } from "@/types/tourism";
 
 interface ViewLocationDialogProps {
-  location: Location;
+  location: TourismType;
 }
 
 const ViewLocationDialog = ({ location }: ViewLocationDialogProps) => {
@@ -40,7 +40,7 @@ const ViewLocationDialog = ({ location }: ViewLocationDialogProps) => {
               </DialogTitle>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Building2 className="h-4 w-4 flex-shrink-0" />
-                <span className="text-sm capitalize">{location.category}</span>
+                <span className="text-sm capitalize">{location.type}</span>
               </div>
             </div>
             <Badge
@@ -59,7 +59,7 @@ const ViewLocationDialog = ({ location }: ViewLocationDialogProps) => {
                 <MapPin className="h-4 w-4 flex-shrink-0" />
                 <span>Address</span>
               </div>
-              <p className="font-medium text-sm">{location.location}</p>
+              <p className="font-medium text-sm">{location.location.address}</p>
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -67,7 +67,7 @@ const ViewLocationDialog = ({ location }: ViewLocationDialogProps) => {
                 <span>Coordinates</span>
               </div>
               <p className="font-medium text-sm">
-                {location.lat}, {location.lng}
+                {location.location.latitude}, {location.location.longitude}
               </p>
             </div>
           </div>
@@ -87,7 +87,7 @@ const ViewLocationDialog = ({ location }: ViewLocationDialogProps) => {
               <Phone className="h-4 w-4 flex-shrink-0" />
               <span>Contact</span>
             </div>
-            <p className="text-sm font-medium break-all">{location.contact}</p>
+            <p className="text-sm font-medium break-all">{location.contact.phone}</p>
           </div>
         </div>
 

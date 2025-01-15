@@ -25,7 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/shared/combobox";
-import { Location } from "@/app/(protected)/(admin)/tourism/table/columns";
+import { Location } from "@/app/(protected)/admin/tourism/table/columns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const locationCategories = [
@@ -80,7 +80,7 @@ const EditLocationDialog = ({
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      // TODO: Implement your API call here
+      
       console.log(values);
       // Close dialog or show success message
     } catch (error) {

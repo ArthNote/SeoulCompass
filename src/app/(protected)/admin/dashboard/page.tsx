@@ -85,7 +85,7 @@ export default function Page() {
   const latestUsers: LatestAddedDataProps = {
     title: "Latest Users",
     description: "List of the latest users registered in the system.",
-    viewAllUrl: "/users",
+    viewAllUrl: "/admin/users",
     data: [
       {
         name: "John Doe",

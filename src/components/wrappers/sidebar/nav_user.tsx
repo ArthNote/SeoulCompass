@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { useClerk } from "@clerk/nextjs";
 
 export function NavUser({
   user,
@@ -47,6 +48,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+    const { signOut } = useClerk();
   const { setTheme, resolvedTheme } = useTheme();
 
   return (
@@ -125,12 +127,13 @@ export function NavUser({
               </DropdownMenuSub>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <Link href="/signin">
-              <DropdownMenuItem>
-                <LogOut />
-                Log out
-              </DropdownMenuItem>
-            </Link>
+
+            <DropdownMenuItem
+              onClick={() => signOut({ redirectUrl: "signin" })}
+            >
+              <LogOut />
+              Sign out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

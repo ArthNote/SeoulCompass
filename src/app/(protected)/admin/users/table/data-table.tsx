@@ -51,15 +51,19 @@ import CreateUserDialog from "../../../../../components/admin/users/create_user_
 import AlertDialogDelete from "../../../../../components/shared/alert_dialog_delete";
 import { DataTableFacetedFilter } from "../../../../../components/table/faceted_filter";
 import { Cross2Icon } from "@radix-ui/react-icons";
+import { useQuery, keepPreviousData, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getUsers, deleteBulkUsers } from "@/lib/api/users";
+import UsersLoading from "../loading";
+import { ErrorState } from "@/components/shared/error-state";
+import { toast } from "@/hooks/use-toast";
+import { UserType } from "@/types/user";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
-  data: TData[];
 }
 
 export function UsersTable<TData, TValue>({
   columns,
-  data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -68,9 +72,55 @@ export function UsersTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [pageIndex, setPageIndex] = React.useState(0);
+  const [pageSize, setPageSize] = React.useState(10);
+
+  React.useEffect(() => {
+    setRowSelection({});
+  }, [pageIndex]);
+
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: [
+      "users",
+      pageIndex,
+      pageSize,
+      columnFilters.find((f) => f.id === "username")?.value,
+      columnFilters.find((f) => f.id === "role")?.value,
+    ],
+    queryFn: () =>
+      getUsers({
+        page: pageIndex,
+        size: pageSize,
+        name: columnFilters.find((f) => f.id === "username")?.value as string,
+        role: columnFilters.find((f) => f.id === "role")?.value as string[],
+      }),
+    placeholderData: keepPreviousData,
+  });
+
+  const queryClient = useQueryClient();
+
+  const { mutate: deleteSelectedUsers } = useMutation({
+    mutationFn: (users: UserType[]) => deleteBulkUsers(users),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      setRowSelection({});
+      toast({
+        title: "Success",
+        description: "Selected users have been deleted.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete users. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const table = useReactTable({
-    data,
-    columns,
+    data: data?.content ?? [],
+    pageCount: data?.totalPages ?? -1,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
@@ -86,9 +136,44 @@ export function UsersTable<TData, TValue>({
       columnFilters,
       columnVisibility,
       rowSelection,
+      pagination: {
+        pageIndex,
+        pageSize,
+      },
     },
     enableMultiRowSelection: true,
+    manualPagination: true,
+    onPaginationChange: (updater) => {
+      if (typeof updater === "function") {
+        const newState = updater({
+          pageIndex,
+          pageSize,
+        });
+        setPageIndex(newState.pageIndex);
+        setPageSize(newState.pageSize);
+      } else {
+        setPageIndex(updater.pageIndex);
+        setPageSize(updater.pageSize);
+      }
+      setRowSelection({});
+    },
+    columns: columns,
   });
+
+  if (isLoading) return <UsersLoading />;
+  if (isError) {
+    return (
+      <ErrorState
+        title="Error loading users"
+        description={
+          error instanceof Error
+            ? error.message
+            : "An error occurred while fetching users. Please try again."
+        }
+        retryAction={() => refetch()}
+      />
+    );
+  }
 
   const isFiltered = table.getState().columnFilters.length > 0;
 
@@ -108,10 +193,12 @@ export function UsersTable<TData, TValue>({
       <div className="flex flex-col-reverse sm:flex-row items-start sm:items-center pb-4 justify-between gap-4">
         <div className="flex items-start gap-2 w-full flex-col-reverse sm:flex-row sm:items-center">
           <Input
-            placeholder="Filter names..."
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            placeholder="Filter usernames..."
+            value={
+              (table.getColumn("username")?.getFilterValue() as string) ?? ""
+            }
             onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
+              table.getColumn("username")?.setFilterValue(event.target.value)
             }
             className="sm:max-w-sm w-full"
           />
@@ -149,16 +236,14 @@ export function UsersTable<TData, TValue>({
                   Delete
                 </Button>
               }
-              title={
-                Object.keys(rowSelection).length == 1
-                  ? "Delete User"
-                  : `Delete ${Object.keys(rowSelection).length} Users`
-              }
-              description={
-                Object.keys(rowSelection).length == 1
-                  ? "Are you sure you want to delete this user?"
-                  : "Are you sure you want to delete these users?"
-              }
+              title={`Delete ${Object.keys(rowSelection).length} Users`}
+              description="Are you sure you want to delete these users? This action cannot be undone."
+              onDelete={() => {
+                const selectedUsers = table
+                  .getFilteredSelectedRowModel()
+                  .rows.map((row) => row.original as UserType);
+                deleteSelectedUsers(selectedUsers);
+              }}
             />
           )}
           <CreateUserDialog />
